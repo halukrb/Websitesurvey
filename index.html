@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clickable Image Survey</title>
+    <style>
+        .survey-image {
+            position: relative;
+            width: 100%;
+            max-width: 1200px; /* Set a max width for the image */
+        }
+
+        .clickable-area {
+            position: absolute;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .clickable-area:hover {
+            border: 2px solid red; /* Highlight on hover */
+        }
+
+        /* Right-side clickable areas for Inquiry, Account, Help, and Language */
+        #inquiry-basket {
+            top: 40px;
+            right: 50px;
+            width: 50px;
+            height: 20px;
+        }
+
+        #account-button {
+            top: 40px;
+            right: 165px;
+            width: 50px;
+            height: 20px;
+        }
+
+        #help-button {
+            top: 40px;
+            right: 265px;
+            width: 50px;
+            height: 20px;
+        }
+
+        #language-button {
+            top: 40px;
+            right: 365px;
+            width: 50px;
+            height: 20px;
+        }
+
+        /* Left-side clickable areas for Category, Men's T-shirt, Women's T-shirt */
+        #category-button {
+            top: 125px;
+            left: 20px;
+            width: 150px;
+            height: 30px;
+        }
+
+        #mens-tshirt {
+            top: 170px;
+            left: 30px;
+            width: 150px;
+            height: 30px;
+        }
+
+        #womens-tshirt {
+            top: 230px;
+            left: 30px;
+            width: 150px;
+            height: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1 id="question">Where should the Inquiry basket be?</h1>
+    
+    <div class="survey-image">
+        <!-- Replace the image path with your image path or use the image in your GitHub repo -->
+        <img src="index.png" alt="Survey Image" style="width: 100%;" onclick="handleClick(event)">
+
+        <!-- Clickable Areas -->
+        <div class="clickable-area" id="inquiry-basket" onclick="handleClick(event)"></div>
+        <div class="clickable-area" id="account-button" onclick="handleClick(event)"></div>
+        <div class="clickable-area" id="help-button" onclick="handleClick(event)"></div>
+        <div class="clickable-area" id="language-button" onclick="handleClick(event)"></div>
+
+        <!-- Clickable Areas (Left Side) -->
+        <div class="clickable-area" id="category-button" onclick="handleClick(event)"></div>
+        <div class="clickable-area" id="mens-tshirt" onclick="handleClick(event)"></div>
+        <div class="clickable-area" id="womens-tshirt" onclick="handleClick(event)"></div>
+    </div>
+
+    <script>
+        // Define the questions
+        const questions = [
+            'Where should the Inquiry basket be?',
+            'Where should the account button be?',
+            'Where should the help button be?',
+            'Where should the language button be?',
+            'Where should the category button be?',
+            'Where should the Men\'s T-shirt button be?',
+            'Where should the Women\'s T-shirt button be?'
+        ];
+
+        let currentQuestion = 0;
+        const totalQuestions = questions.length;
+
+        // Array to store user answers (click coordinates)
+        const answers = [];
+
+        // Capture the click event and store coordinates
+        function handleClick(event) {
+            // Get the X and Y coordinates of the click
+            const x = event.clientX;
+            const y = event.clientY;
+
+            // Store the coordinates for the current question
+            answers.push({
+                question: questions[currentQuestion],
+                x: x,
+                y: y
+            });
+
+            // Proceed to the next question or finish the survey
+            currentQuestion++;
+            if (currentQuestion < totalQuestions) {
+                displayQuestion();
+            } else {
+                // Display the final message when survey is completed
+                const questionElement = document.getElementById('question');
+                questionElement.innerText = 'Survey completed! Thank you for your answers.';
+
+                // Send data to Google Sheets when all questions are answered
+                sendToGoogleSheets();
+            }
+        }
+
+        // Display the next question
+        function displayQuestion() {
+            const questionElement = document.getElementById('question');
+            if (currentQuestion < totalQuestions) {
+                questionElement.innerText = questions[currentQuestion];
+            } else {
+                questionElement.innerText = 'Survey completed! Thank you for your answers.';
+            }
+        }
+
+        // Send the click coordinates to Google Sheets
+        function sendToGoogleSheets() {
+            const surveyData = {
+                question1: {x: answers[0].x, y: answers[0].y},
+                question2: {x: answers[1].x, y: answers[1].y},
+                question3: {x: answers[2].x, y: answers[2].y},
+                question4: {x: answers[3].x, y: answers[3].y},
+                question5: {x: answers[4].x, y: answers[4].y},
+                question6: {x: answers[5].x, y: answers[5].y},
+                question7: {x: answers[6].x, y: answers[6].y}
+            };
+
+            // Use the Web App URL from Google Apps Script
+            const scriptURL = 'https://script.google.com/macros/s/AKfycby_jk69OVMLLYEmQYcH9Io7RwEXCQioAlyXiWEJy18MrPrZAJzl5MmERMKh8EicQNUz/exec';
+
+            fetch(scriptURL, {
+                method: 'POST',
+                body: JSON.stringify(surveyData),
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then((response) => {
+                console.log('Survey data sent successfully!');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Initialize with the first question
+        displayQuestion();
+    </script>
+
+</body>
+</html>
